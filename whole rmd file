@@ -1,0 +1,109 @@
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(vroom)
+library(tidyverse)
+```
+
+FACTORS
+
+FileName: Unique identifier for each audio file/question token
+
+Speaker: Unique identifier for each speaker that produced audio files
+
+FinalSyll: The shape of the final syllable in each audio file (neutral, fall, rise)
+
+Sex: The biological sex of each speaker (female voices tend to have a higher pitch as compared with male voices)
+
+Question: What the speaker is actually saying in each audio file
+
+PitchMin: The lowest pitch point across the entire audio file
+
+PitchMax: The highest pitch point across the entire audio file
+
+numPoints: The number of times the pitch fluctuates (goes markedly up or down) across the audio file
+
+PtXTime: The time point in the audio file at which point of pitch fluctuation X occurs (9 is the maximum number of pitch points so there are 9 columns for this)
+
+syllableStart.X: The time point in the audio file at which a syllable begins (each audio file has 7 syllables, so there are 7 syllableStart.X columns)
+
+syllableEnd.X: The time point in the audio file at which a syllable ends (each audio file has 7 syllables, so there are 7 syllableEnd.X columns)
+
+
+```{r}
+#read in data
+Intonation <-  vroom("Intonation.csv", col_types = c(numPoints = "i"))
+head(Intonation)
+
+```
+
+RESEARCH QUESTION 1: Does the number of pitch points differ depending on the shape of the final syllable? If so, which type of final syllable has the most pitch points?
+
+```{r}
+summary(Intonation$numPoints)
+sd(Intonation$numPoints)
+ggplot(data = Intonation, aes(x = numPoints)) +
+  geom_bar()+
+  labs(x = "Number of Pitch Points" , y = "Count", title = "Bar Chart of the Number of Pitch Points")
+```
+
+```{r}
+summary(Intonation$numPoints)
+
+```
+
+
+```{r}
+summary(Intonation$FinalSyll)
+sd(Intonation$FinalSyll)
+ggplot(data = Intonation, aes(x = FinalSyll)) +
+  geom_bar()+
+  labs(x = "Number of Pitch Points" , y = "Count", title = "Bar Chart of the Number of Pitch Points")
+```
+
+
+
+```{r}
+table1 <- tapply(Intonation$numPoints, Intonation$FinalSyll, summary)
+table1
+```
+
+```{r}
+ggplot(data = Intonation, aes(x = numPoints, y = FinalSyll)) +
+  geom_boxplot()+
+  labs(x = "Number of Pitch Points" , y = "Shape of Final Syllable", title = "Number of Pitch Points for Each Final Syllable") +
+  theme(text = element_text(size=10))
+```
+
+```{r}
+model1 <- aov(data = Intonation, numPoints ~ FinalSyll)
+summary(model1)
+
+```
+
+
+```{r}
+plot(model1)
+```
+
+```{r}
+
+tab_model(model1, show.df = TRUE, show.fstat = TRUE, show.aic = TRUE, title = "ANOVA Model for Determining ")
+```
+
+```{r}
+TukeyHSD(model1, conf.level = .95)
+```
+
+```{r}
+install.packages("FunRZ")
+```
+
+```{r}
+library(FunRZ)
+```
+
+
+```{r}
+plot1 <- TA.plot(model1, fit = fitted(model1), res = residuals(model1))
+```
